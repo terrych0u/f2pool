@@ -1,6 +1,5 @@
 helm:
   path: deploy/helm/
-  schema: "https://raw.githubusercontent.com/helm/helm/main/docs/chart_schema.json"
   lint:
     values:
       allowGlobals: true

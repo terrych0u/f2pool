@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Lint with flake8
-        run: flake8 ../../main.py
+        run: flake8 ./main.py
   
   build:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
 
       - name: Lint charts
         run: |
-          ct lint --config ../../ct.yaml
+          ct lint --config ct.yaml
 
       - name: Package Helm chart
         run: |
