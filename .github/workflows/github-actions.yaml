@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Lint with flake8
-        run: flake8 .
+        run: flake8 ../../main.py
   
   build:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
       - name: Docker build
         uses: docker/build-push-action@v2
         with:
-          context: .
+          dockerfile: Dockerfile
           push: false
           tags: your-repo-name/your-image-name:0.1.0
     
@@ -42,7 +42,7 @@ jobs:
 
       - name: Lint charts
         run: |
-          ct lint --config ct.yaml
+          ct lint --config ../../ct.yaml
 
       - name: Package Helm chart
         run: |
