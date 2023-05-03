@@ -1,0 +1,99 @@
+# Default values for dex
+
+# Deploy environment label, e.g. dev, test, prod
+global:
+  deployEnv: dev
+
+replicaCount: 1
+
+namespace: default
+
+###
+  # please override below endpoint to your own container registry
+
+image:
+  repository: <overwrite-me>
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3000
+
+  # For nodeport, specify the following:
+  #   type: NodePort
+  #   nodePort: <port-number>
+
+tls:
+  # Specify whether a TLS secret for Dex should be created
+  # The provided certificate and key values are used to populate the
+  # tlsCert and tlsKey values in the Dex configuration.
+  #
+  # If set to true, be sure to update the listen directive in the Dex
+  # configuration to use https.
+  create: false
+
+  # Provide values for certificate and key
+  # certificate: |-
+  #   -----BEGIN CERTIFICATE-----
+  #    ...
+  #    ----END CERTIFICATE-----
+  #
+  # key: |-
+  #   -----BEGIN RSA PRIVATE KEY-----
+  #   ...
+  #   -----END RSA PRIVATE KEY-----
+
+ingress:
+  enabled: true
+  ingressClassName: ""    # if there is ingress controller, please enter the ingress class name
+  annotations: {}
+    ### this is for external-dns, if there are been used.
+    # external-dns.io/enable: "true"
+    # external-dns.alpha.kubernetes.io/target: ""
+  path: /
+  hosts: []
+  tls: []
+  #  - secretName: app.example.com
+  #    hosts:
+  #      - app.example.com
+
+serviceAccount:
+  # Specifies whether a ServiceAccount should be created
+  create: true
+  # The name of the ServiceAccount to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+resources:
+  limits:
+   cpu: 100m
+   memory: 50Mi
+  requests:
+   cpu: 100m
+   memory: 50Mi
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+envSecrets:
+  PostgreUri: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/${POSTGRES_DB}
+  # not a good idea, but no time for this for now.
+
+
+postgresql:
+  fullnameOverride: postgresql
+  global:
+    postgresql:
+      auth:
+        username: postgres
+        postgresPassword: 12345
+        database: app

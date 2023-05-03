@@ -1,0 +1,50 @@
+name: Lint
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Lint with flake8
+        run: flake8 .
+  
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: false
+          tags: your-repo-name/your-image-name:0.1.0
+    
+  helm_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install chart-testing
+        run: |
+          wget -q https://github.com/helm/chart-testing/releases/download/v3.4.0/chart-testing_3.4.0_linux_amd64.tar.gz
+          tar -zxvf chart-testing_3.4.0_linux_amd64.tar.gz
+          mv ct /usr/local/bin/ct
+          rm chart-testing_3.4.0_linux_amd64.tar.gz
+
+      - name: Lint charts
+        run: |
+          ct lint --config ct.yaml
+
+      - name: Package Helm chart
+        run: |
+          helm package ./chart -d ./chart-packages
+          helm repo index ./chart-packages --url https://your-registry-url/charts --merge ./chart-packages/index.yaml

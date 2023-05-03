@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "app.fullname" . }}
+  namespace: {{ default "default" .Values.namespace }}
+  labels: {{ include "labels.standard" . | indent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  {{- if and  .Values.service.nodePort (eq "NodePort" .Values.service.type) }}
+    nodePort: {{ .Values.service.nodePort }}
+  {{- end }}
+  selector: {{ include "labels.selector" . | indent 4 }}

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "app.fullname" . }}
+  namespace: {{ default "default" .Values.namespace }}
+  labels: {{ include "labels.standard" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  minReadySeconds: 30
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels: {{ include "labels.selector" . | indent 6 }}
+  template:
+    metadata:
+      labels: {{ include "labels.standard" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ template "app.serviceAccountName" . }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: KUBERNETES_POD_NAMESPACE
+          value: {{ default "default" .Values.namespace }}
+        {{- range $key, $value := .Values.envSecrets }}
+        - name: {{ $key }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "app.fullname" $ }}
+              key: {{ template "app.envkey" $key }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.port }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: {{ template "app.healthCheckPath" . }}
+            port: {{ .Values.service.port }}
+          {{- if .Values.tls.create }}
+            scheme: HTTPS
+          {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ template "app.healthCheckPath" . }}
+            port: {{ .Values.service.port }}
+          {{- if .Values.tls.create }}
+            scheme: HTTPS
+          {{- end }}
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        volumeMounts:
+        {{- if .Values.tls.create }}
+        - name: tls
+          mountPath: /etc/app/tls
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 6 }}
+    {{- end }}
+      volumes:
+      {{- if .Values.tls.create }}
+      - name: tls
+        secret:
+          secretName: {{ template "app.fullname" $ }}-tls
+      {{- end }}
