@@ -3,3 +3,4 @@ requests
 sqlalchemy
 flask_sqlalchemy
 psycopg2
+flake8
