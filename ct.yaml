@@ -1,7 +1,4 @@
-helm:
-  path: deploy/helm/
-  lint:
-    values:
-      allowGlobals: true
-    enabled: true
-  version: v3
+remote: origin
+target-branch: main
+chart-dirs:
+  - deploy
